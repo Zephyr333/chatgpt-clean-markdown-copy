@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         ChatGPT Clean Markdown Copy
 // @namespace    local.chatgpt.clean.markdown.copy
-// @version      0.3.0
+// @version      0.3.1
 // @author       Zephyr Three
 // @description  One-click copy ChatGPT assistant response as clean Markdown without citation tokens.
 // @match        https://chatgpt.com/*
 // @match        https://chat.openai.com/*
 // @license      MIT
+// @icon         data:image/svg+xml,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%20%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23111111%22/%3E%0A%20%20%3Crect%20x%3D%2224%22%20y%3D%2212%22%20width%3D%2228%22%20height%3D%2228%22%20rx%3D%227%22%20fill%3D%22none%22%20stroke%3D%22%23f5f5f5%22%20stroke-width%3D%225%22/%3E%0A%20%20%3Crect%20x%3D%2212%22%20y%3D%2224%22%20width%3D%2228%22%20height%3D%2228%22%20rx%3D%227%22%20fill%3D%22%23111111%22%20stroke%3D%22%23f5f5f5%22%20stroke-width%3D%225%22/%3E%0A%20%20%3Ctext%20x%3D%2226%22%20y%3D%2244%22%20text-anchor%3D%22middle%22%20font-size%3D%2215%22%20font-weight%3D%22800%22%20font-family%3D%22Arial,%20Helvetica,%20sans-serif%22%20fill%3D%22%23f5f5f5%22%3EM%3C/text%3E%0A%3C/svg%3E
 // @homepageURL  https://github.com/Zephyr333/chatgpt-clean-markdown-copy
 // @supportURL   https://github.com/Zephyr333/chatgpt-clean-markdown-copy/issues
 // @downloadURL  https://raw.githubusercontent.com/Zephyr333/chatgpt-clean-markdown-copy/main/chatgpt-clean-markdown-copy.user.js
