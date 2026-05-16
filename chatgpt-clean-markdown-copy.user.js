@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Clean Markdown Copy
 // @namespace    local.chatgpt.clean.markdown.copy
-// @version      0.2.7
+// @version      0.2.8
 // @author       Zephyr Three
 // @description  One-click copy ChatGPT assistant response as clean Markdown without citation tokens.
 // @match        https://chatgpt.com/*
@@ -337,35 +337,17 @@
     return button;
   }
 
-  function findToolbar(message) {
-    const nativeCopyButton = findNativeCopyButton(message);
-    if (nativeCopyButton) {
-      return nativeCopyButton.parentElement;
-    }
-
-    return Array.from(message.querySelectorAll('[role="toolbar"], menu, nav')).find((node) => {
-      return node.querySelector('button');
-    }) || null;
-  }
-
   function insertButton(message) {
-    if (message.getAttribute(PROCESSED_ATTR) === 'true') {
+    const nativeCopyButton = findNativeCopyButton(message);
+    if (!nativeCopyButton || !nativeCopyButton.parentElement) {
       return;
     }
 
-    const button = createCopyButton(message);
-    const nativeCopyButton = findNativeCopyButton(message);
-    const toolbar = nativeCopyButton ? nativeCopyButton.parentElement : findToolbar(message);
+    const existingButton = message.querySelector(`.${BUTTON_CLASS}`);
+    const button = existingButton || createCopyButton(message);
 
-    if (nativeCopyButton && nativeCopyButton.parentElement) {
+    if (button.parentElement !== nativeCopyButton.parentElement || button.previousElementSibling !== nativeCopyButton) {
       nativeCopyButton.parentElement.insertBefore(button, nativeCopyButton.nextSibling);
-    } else if (toolbar) {
-      toolbar.appendChild(button);
-    } else {
-      const wrapper = document.createElement('div');
-      wrapper.style.marginTop = '8px';
-      wrapper.appendChild(button);
-      message.appendChild(wrapper);
     }
 
     message.setAttribute(PROCESSED_ATTR, 'true');
