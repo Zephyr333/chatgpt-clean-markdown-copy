@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Clean Markdown Copy
 // @namespace    local.chatgpt.clean.markdown.copy
-// @version      0.3.2
+// @version      0.3.3
 // @author       Zephyr Three
 // @description  One-click copy ChatGPT assistant response as clean Markdown without citation tokens.
 // @match        https://chatgpt.com/*
@@ -119,6 +119,41 @@
     );
   }
 
+  function isNearMessageBottom(message, element) {
+    const messageRect = message.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+
+    if (!messageRect.height || !elementRect.height) {
+      return true;
+    }
+
+    return elementRect.top >= messageRect.bottom - 180 && elementRect.top <= messageRect.bottom + 120;
+  }
+
+  function isAfterContent(message, element) {
+    const contentRoot = message.querySelector('.markdown');
+    if (!contentRoot) {
+      return true;
+    }
+
+    const contentRect = contentRoot.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+
+    if (!contentRect.height || !elementRect.height) {
+      return true;
+    }
+
+    return elementRect.top >= contentRect.bottom - 24;
+  }
+
+  function isLikelyMessageActionButton(message, button) {
+    return (
+      !isInsideMessageContent(message, button) &&
+      isAfterContent(message, button) &&
+      isNearMessageBottom(message, button)
+    );
+  }
+
   function isNearMessage(message, element) {
     const messageRect = message.getBoundingClientRect();
     const elementRect = element.getBoundingClientRect();
@@ -150,7 +185,7 @@
 
   function findNativeCopyButton(message) {
     const insideButtons = Array.from(message.querySelectorAll('button')).filter((button) => {
-      return isNativeCopyButton(button) && !isInsideMessageContent(message, button);
+      return isNativeCopyButton(button) && isLikelyMessageActionButton(message, button);
     });
     const insideButton = pickBottomMostButton(insideButtons);
     if (insideButton) {
@@ -166,10 +201,10 @@
 
         const ownerMessage = button.closest('[data-message-author-role]');
         if (ownerMessage === message) {
-          return !isInsideMessageContent(message, button);
+          return isLikelyMessageActionButton(message, button);
         }
 
-        return !ownerMessage && isNearMessage(message, button);
+        return !ownerMessage && isNearMessage(message, button) && isLikelyMessageActionButton(message, button);
       });
       const nearbyButton = pickBottomMostButton(nearbyButtons);
 
