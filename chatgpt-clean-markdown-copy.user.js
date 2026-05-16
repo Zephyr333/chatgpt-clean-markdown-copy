@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Clean Markdown Copy
 // @namespace    local.chatgpt.clean.markdown.copy
-// @version      0.2.8
+// @version      0.2.9
 // @author       Zephyr Three
 // @description  One-click copy ChatGPT assistant response as clean Markdown without citation tokens.
 // @match        https://chatgpt.com/*
@@ -20,6 +20,8 @@
 
   const PROCESSED_ATTR = 'data-clean-md-copy-button';
   const BUTTON_CLASS = 'clean-md-copy-button';
+  const MESSAGE_ID_ATTR = 'data-clean-md-copy-message-id';
+  const BUTTON_OWNER_ATTR = 'data-clean-md-copy-owner';
   const COPIED_TEXT = 'Copied!';
   const FAILED_TEXT = 'Failed';
   const COPY_LABEL_RE = /copy|复制|拷贝/i;
@@ -29,6 +31,7 @@
   const INTERNAL_TOKEN_RE = /[\s\S]*?/g;
   const INTERNAL_TOKEN_TEST_RE = /[\s\S]*?/;
   let iconMaskCounter = 0;
+  let messageIdCounter = 0;
 
   function cleanInternalTokens(text) {
     return String(text || '')
@@ -337,14 +340,29 @@
     return button;
   }
 
+  function getMessageId(message) {
+    let messageId = message.getAttribute(MESSAGE_ID_ATTR);
+
+    if (!messageId) {
+      messageIdCounter += 1;
+      messageId = `clean-md-message-${messageIdCounter}`;
+      message.setAttribute(MESSAGE_ID_ATTR, messageId);
+    }
+
+    return messageId;
+  }
+
   function insertButton(message) {
     const nativeCopyButton = findNativeCopyButton(message);
     if (!nativeCopyButton || !nativeCopyButton.parentElement) {
       return;
     }
 
-    const existingButton = message.querySelector(`.${BUTTON_CLASS}`);
+    const messageId = getMessageId(message);
+    const existingButton = document.querySelector(`.${BUTTON_CLASS}[${BUTTON_OWNER_ATTR}="${messageId}"]`)
+      || message.querySelector(`.${BUTTON_CLASS}`);
     const button = existingButton || createCopyButton(message);
+    button.setAttribute(BUTTON_OWNER_ATTR, messageId);
 
     if (button.parentElement !== nativeCopyButton.parentElement || button.previousElementSibling !== nativeCopyButton) {
       nativeCopyButton.parentElement.insertBefore(button, nativeCopyButton.nextSibling);
