@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Clean Markdown Copy
 // @namespace    local.chatgpt.clean.markdown.copy
-// @version      0.3.1
+// @version      0.3.2
 // @author       Zephyr Three
 // @description  One-click copy ChatGPT assistant response as clean Markdown without citation tokens.
 // @match        https://chatgpt.com/*
@@ -30,7 +30,7 @@
   const TOKEN_MARK = '\uE000';
   const PUNCTUATION_RE = /^[.,!?;:。，！？；：、）】》」』)]$/;
   const INTERNAL_TOKEN_RE = /[\s\S]*?/g;
-  const INTERNAL_TOKEN_TEST_RE = /[\s\S]*?/;
+  const CLIPBOARD_SENTINEL_PREFIX = '\uE001clean-md-copy-sentinel-';
   let iconMaskCounter = 0;
   let messageIdCounter = 0;
 
@@ -206,22 +206,38 @@
           console.warn('[Clean MD Copy] Clipboard pre-read failed; native copy will still be attempted.', error);
         }
 
+        const sentinel = `${CLIPBOARD_SENTINEL_PREFIX}${Date.now()}-${Math.random()}`;
+        let sentinelWritten = false;
+        if (previousRawText !== null) {
+          try {
+            await writeClipboard(sentinel);
+            sentinelWritten = true;
+          } catch (error) {
+            console.warn('[Clean MD Copy] Clipboard sentinel write failed; falling back to change detection.', error);
+          }
+        }
+
         altClick(nativeCopyButton);
         await sleep(240);
 
         const nativeRawText = await readClipboard();
         const cleanedText = cleanInternalTokens(nativeRawText);
-        const nativeCopyLikelyWorked = (
-          previousRawText === null ||
-          nativeRawText !== previousRawText ||
-          INTERNAL_TOKEN_TEST_RE.test(nativeRawText) ||
-          cleanedText !== nativeRawText
-        );
+        const nativeCopyLikelyWorked = sentinelWritten
+          ? nativeRawText !== sentinel
+          : (
+            previousRawText === null ||
+            nativeRawText !== previousRawText ||
+            cleanedText !== nativeRawText
+          );
 
         if (cleanedText && nativeCopyLikelyWorked) {
           await writeClipboard(cleanedText);
           console.info('[Clean MD Copy] Copied via native Alt+copy path.');
           return;
+        }
+
+        if (sentinelWritten) {
+          await writeClipboard(previousRawText);
         }
 
         throw new Error('Native Alt+copy did not change the clipboard.');
